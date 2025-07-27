@@ -1,0 +1,238 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Backend Tests
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: balonis_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-django pytest-cov
+    
+    - name: Set up environment
+      run: |
+        cd backend
+        echo "DEBUG=True" > .env
+        echo "SECRET_KEY=test-secret-key-for-ci" >> .env
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/balonis_test" >> .env
+        echo "ALLOWED_HOSTS=localhost,127.0.0.1" >> .env
+        echo "CORS_ALLOWED_ORIGINS=http://localhost:3000" >> .env
+    
+    - name: Run migrations
+      run: |
+        cd backend
+        python manage.py migrate
+    
+    - name: Run Django tests
+      run: |
+        cd backend
+        python manage.py test
+    
+    - name: Check Django deployment
+      run: |
+        cd backend
+        python manage.py check --deploy
+
+  # Frontend Tests
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run ESLint
+      run: |
+        cd frontend
+        npm run lint
+    
+    - name: Run TypeScript check
+      run: |
+        cd frontend
+        npm run type-check
+    
+    - name: Build application
+      run: |
+        cd frontend
+        npm run build
+    
+    - name: Run tests (if available)
+      run: |
+        cd frontend
+        # npm test -- --coverage --watchAll=false
+        echo "Frontend tests will be added in future versions"
+
+  # Security Checks
+  security-checks:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Code Quality
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install Python code quality tools
+      run: |
+        pip install black isort flake8 bandit
+    
+    - name: Check Python code formatting with Black
+      run: |
+        cd backend
+        black --check .
+    
+    - name: Check Python imports with isort
+      run: |
+        cd backend
+        isort --check-only .
+    
+    - name: Run flake8 linting
+      run: |
+        cd backend
+        flake8 .
+    
+    - name: Run Bandit security linter
+      run: |
+        cd backend
+        bandit -r . -x tests/
+
+  # Build and Deploy (only on main branch)
+  deploy:
+    needs: [backend-tests, frontend-tests, security-checks, code-quality]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker images
+      run: |
+        echo "Building Docker images for production deployment"
+        # docker build -t balonis-backend ./backend
+        # docker build -t balonis-frontend ./frontend
+        echo "Docker build commands will be added when ready for deployment"
+    
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment"
+        echo "Deployment scripts will be added when ready"
+    
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests on deployed application"
+        echo "Smoke tests will be added when deployment is ready"
+
+  # Create Release (only on version tags)
+  release:
+    needs: [backend-tests, frontend-tests, security-checks, code-quality]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## Changes in this Release
+          
+          Please see CHANGELOG.md for detailed information about changes in this release.
+          
+          ## Installation
+          
+          ```bash
+          git clone https://github.com/${{ github.repository }}.git
+          cd balonis-project
+          git checkout ${{ github.ref }}
+          ./scripts/setup.sh
+          ```
+          
+          ## Documentation
+          
+          - [API Documentation](docs/API.md)
+          - [Deployment Guide](docs/DEPLOYMENT.md)
+          - [README](README.md)
+        draft: false
+        prerelease: false
+
