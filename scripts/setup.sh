@@ -48,11 +48,6 @@ check_requirements() {
         exit 1
     fi
     
-    # PostgreSQL
-    if ! command -v psql &> /dev/null; then
-        print_warning "PostgreSQL nie jest zainstalowany. Zainstaluj go ręcznie."
-    fi
-    
     # Git
     if ! command -v git &> /dev/null; then
         print_error "Git nie jest zainstalowany"
@@ -62,31 +57,13 @@ check_requirements() {
     print_success "Wszystkie wymagania spełnione"
 }
 
-# Konfiguracja bazy danych
+# Konfiguracja bazy danych (SQLite)
 setup_database() {
-    print_step "Konfiguracja bazy danych..."
+    print_step "Konfiguracja bazy danych SQLite..."
     
-    read -p "Nazwa bazy danych [balonis]: " DB_NAME
-    DB_NAME=${DB_NAME:-balonis}
-    
-    read -p "Użytkownik bazy danych [balonis_user]: " DB_USER
-    DB_USER=${DB_USER:-balonis_user}
-    
-    read -s -p "Hasło do bazy danych: " DB_PASSWORD
-    echo
-    
-    read -p "Host bazy danych [localhost]: " DB_HOST
-    DB_HOST=${DB_HOST:-localhost}
-    
-    read -p "Port bazy danych [5432]: " DB_PORT
-    DB_PORT=${DB_PORT:-5432}
-    
-    # Sprawdź połączenie z bazą danych
-    if PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT 1;" &> /dev/null; then
-        print_success "Połączenie z bazą danych działa"
-    else
-        print_warning "Nie można połączyć się z bazą danych. Sprawdź ustawienia."
-    fi
+    # SQLite nie wymaga dodatkowej konfiguracji
+    # Plik bazy danych zostanie utworzony automatycznie przy pierwszej migracji
+    print_success "SQLite skonfigurowane (baza danych zostanie utworzona automatycznie)"
 }
 
 # Konfiguracja backend
@@ -113,7 +90,7 @@ setup_backend() {
         cat > .env << EOF
 DEBUG=True
 SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
-DATABASE_URL=postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME
+DATABASE_URL=sqlite:///db.sqlite3
 ALLOWED_HOSTS=localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 EOF
