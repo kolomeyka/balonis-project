@@ -9,11 +9,11 @@ export default function Header() {
   const [cartItemsCount, setCartItemsCount] = useState(0);
 
   const navigation = [
-    { name: 'Главная', href: '/' },
-    { name: 'Каталог', href: '/catalog' },
-    { name: 'Галерея', href: '/gallery' },
-    { name: 'Доставка', href: '/delivery' },
-    { name: 'Контакты', href: '/contacts' },
+    { name: 'GŁOWNA', href: '/' },
+    { name: 'KATALOG', href: '/catalog' },
+    { name: 'GALLERY', href: '/gallery' },
+    { name: 'DOSTAWA', href: '/delivery' },
+    { name: 'KONTAKT', href: '/contacts' },
   ];
 
   return (

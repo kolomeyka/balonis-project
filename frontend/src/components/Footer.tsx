@@ -96,30 +96,30 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Контакты</h3>
+            <h3 className="text-lg font-semibold">KONTAKT</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-pink-500" />
                 <a
-                  href="tel:+79999999999"
+                  href="tel:+489999999999"
                   className="text-gray-300 hover:text-white transition-colors duration-200"
                 >
-                  +7 (999) 999-99-99
+                  +48 (999) 999-99-99
                 </a>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-pink-500" />
                 <a
-                  href="mailto:info@balloonshop.ru"
+                  href="mailto:info@balonis.pl"
                   className="text-gray-300 hover:text-white transition-colors duration-200"
                 >
-                  info@balloonshop.ru
+                  info@balonis.pl
                 </a>
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-pink-500 mt-1" />
                 <span className="text-gray-300">
-                  г. Москва, ул. Примерная, д. 123
+                  Krakow
                 </span>
               </div>
             </div>
