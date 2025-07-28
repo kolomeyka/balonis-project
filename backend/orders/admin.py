@@ -2,14 +2,14 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from .models import Order, OrderItem, DeliveryZone
+from .models import Order, OrderItem
 
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ['product', 'selected_color', 'selected_size', 'quantity', 'price', 'total_price']
-    fields = ['product', 'selected_color', 'selected_size', 'custom_text', 'quantity', 'price', 'total_price', 'notes']
+    readonly_fields = ['product', 'selected_color', 'quantity', 'price', 'total_price']
+    fields = ['product', 'selected_color', 'custom_text', 'quantity', 'price', 'total_price', 'notes']
     can_delete = False
 
 
@@ -85,11 +85,11 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = [
-        'order_link', 'product', 'selected_color', 'selected_size', 
+        'order_link', 'product', 'selected_color',
         'quantity', 'price', 'total_price'
     ]
     list_filter = [
-        'product__category', 'selected_color', 'selected_size', 
+        'product__category', 'selected_color',
         'order__status', 'order__created_at'
     ]
     search_fields = [
@@ -107,25 +107,4 @@ class OrderItemAdmin(admin.ModelAdmin):
         return f"{obj.total_price}₽"
     total_price.short_description = 'Итого'
 
-
-@admin.register(DeliveryZone)
-class DeliveryZoneAdmin(admin.ModelAdmin):
-    list_display = [
-        'name', 'delivery_cost', 'min_order_amount', 'is_active'
-    ]
-    list_filter = ['is_active']
-    search_fields = ['name', 'description']
-    list_editable = ['is_active']
-    
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('name', 'description')
-        }),
-        ('Условия доставки', {
-            'fields': ('delivery_cost', 'min_order_amount')
-        }),
-        ('Настройки', {
-            'fields': ('is_active',)
-        })
-    )
 
