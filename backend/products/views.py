@@ -3,11 +3,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Min, Max
-from .models import Category, Color, Source, Product, Review
+from .models import Category, Color, Source, Product
 from .serializers import (
     CategorySerializer, ColorSerializer, SourceSerializer,
     ProductListSerializer, ProductDetailSerializer, 
-    ProductCreateSerializer, ReviewSerializer, ReviewCreateSerializer
+    ProductCreateSerializer
 )
 
 
@@ -57,7 +57,7 @@ class ProductListView(generics.ListAPIView):
 class ProductDetailView(generics.RetrieveAPIView):
     """Детальная информация о товаре"""
     queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related(
-        'colors', 'sizes', 'images', 'reviews'
+        'colors', 'sizes', 'images'
     )
     serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
@@ -90,18 +90,18 @@ class ProductCreateView(generics.CreateAPIView):
     serializer_class = ProductCreateSerializer
 
 
-class ReviewListCreateView(generics.ListCreateAPIView):
-    """Список и создание отзывов"""
-    serializer_class = ReviewSerializer
-    
-    def get_queryset(self):
-        product_id = self.kwargs.get('product_id')
-        return Review.objects.filter(product_id=product_id, is_approved=True).order_by('-created_at')
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ReviewCreateSerializer
-        return ReviewSerializer
+# class ReviewListCreateView(generics.ListCreateAPIView):
+#     """Список и создание отзывов"""
+#     serializer_class = ReviewSerializer
+#
+#     def get_queryset(self):
+#         product_id = self.kwargs.get('product_id')
+#         return Review.objects.filter(product_id=product_id, is_approved=True).order_by('-created_at')
+#
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return ReviewCreateSerializer
+#         return ReviewSerializer
 
 
 @api_view(['GET'])
