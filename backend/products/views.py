@@ -3,11 +3,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q, Min, Max
-from .models import Category, Color, Source, Product, Review
+from .models import Category, Color, Source, Product
 from .serializers import (
     CategorySerializer, ColorSerializer, SourceSerializer,
     ProductListSerializer, ProductDetailSerializer, 
-    ProductCreateSerializer, ReviewSerializer, ReviewCreateSerializer
+    ProductCreateSerializer
 )
 
 
@@ -31,7 +31,7 @@ class SourceListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """Список товаров с фильтрацией"""
-    queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images')
+    queryset = Product.objects.filter(is_active=True).select_related('category')
     serializer_class = ProductListSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'colors', 'sources', 'shape', 'theme', 'is_featured']
@@ -56,9 +56,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """Детальная информация о товаре"""
-    queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related(
-        'colors', 'sizes', 'images', 'reviews'
-    )
+    queryset = Product.objects.filter(is_active=True).select_related('category')
     serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
     
@@ -74,13 +72,13 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class FeaturedProductsView(generics.ListAPIView):
     """Рекомендуемые товары"""
-    queryset = Product.objects.filter(is_active=True, is_featured=True).select_related('category').prefetch_related('images')
+    queryset = Product.objects.filter(is_active=True, is_featured=True).select_related('category')
     serializer_class = ProductListSerializer
 
 
 class PopularProductsView(generics.ListAPIView):
     """Популярные товары (по просмотрам)"""
-    queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images').order_by('-views_count')[:10]
+    queryset = Product.objects.filter(is_active=True).select_related('category').order_by('-views_count')[:10]
     serializer_class = ProductListSerializer
 
 
@@ -90,18 +88,18 @@ class ProductCreateView(generics.CreateAPIView):
     serializer_class = ProductCreateSerializer
 
 
-class ReviewListCreateView(generics.ListCreateAPIView):
-    """Список и создание отзывов"""
-    serializer_class = ReviewSerializer
-    
-    def get_queryset(self):
-        product_id = self.kwargs.get('product_id')
-        return Review.objects.filter(product_id=product_id, is_approved=True).order_by('-created_at')
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ReviewCreateSerializer
-        return ReviewSerializer
+# class ReviewListCreateView(generics.ListCreateAPIView):
+#     """Список и создание отзывов"""
+#     serializer_class = ReviewSerializer
+#
+#     def get_queryset(self):
+#         product_id = self.kwargs.get('product_id')
+#         return Review.objects.filter(product_id=product_id, is_approved=True).order_by('-created_at')
+#
+#     def get_serializer_class(self):
+#         if self.request.method == 'POST':
+#             return ReviewCreateSerializer
+#         return ReviewSerializer
 
 
 @api_view(['GET'])
@@ -145,7 +143,7 @@ def search_products(request):
         Q(description__icontains=query) |
         Q(short_description__icontains=query),
         is_active=True
-    ).select_related('category').prefetch_related('images')[:20]
+    ).select_related('category')[:20]
     
     serializer = ProductListSerializer(products, many=True)
     return Response({'results': serializer.data})

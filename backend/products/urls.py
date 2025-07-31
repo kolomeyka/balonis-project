@@ -15,7 +15,7 @@ urlpatterns = [
     path('<slug:slug>/', views.ProductDetailView.as_view(), name='product-detail'),
     
     # Отзывы
-    path('<int:product_id>/reviews/', views.ReviewListCreateView.as_view(), name='product-reviews'),
+    # path('<int:product_id>/reviews/', views.ReviewListCreateView.as_view(), name='product-reviews'),
     
     # Утилиты
     path('filters/', views.product_filters, name='product-filters'),
