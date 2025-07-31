@@ -260,7 +260,7 @@ export default function CatalogPage() {
                         <div className="aspect-square bg-stone-100 relative">
                           {product.image ? (
                             <img
-                              src={apiClient.getImageUrl(product.image)}
+                              src={product.image}
                               alt={product.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {

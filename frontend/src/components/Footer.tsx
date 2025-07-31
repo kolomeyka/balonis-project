@@ -17,8 +17,8 @@ export default function Footer() {
               <span className="ml-2 text-lg font-bold">Balloon Shop</span>
             </div>
             <p className="text-gray-300 text-sm">
-              Создаем незабываемые моменты с помощью красивых шариковых композиций. 
-              Индивидуальный подход к каждому клиенту и гарантия качества.
+              Tworzymy twoje momenty.
+              Indiwidualne podejscie do zamówień i gwarancja jakosci.
             </p>
             <div className="flex space-x-4">
               <a
@@ -42,26 +42,26 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Быстрые ссылки</h3>
+            <h3 className="text-lg font-semibold">Nawigacja</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/catalog" className="text-gray-300 hover:text-white transition-colors duration-200">
-                  Каталог товаров
+                  Katalog
                 </Link>
               </li>
               <li>
                 <Link href="/gallery" className="text-gray-300 hover:text-white transition-colors duration-200">
-                  Наши работы
+                  Nasze realizacje
                 </Link>
               </li>
               <li>
                 <Link href="/delivery" className="text-gray-300 hover:text-white transition-colors duration-200">
-                  Доставка и оплата
+                  Dostawa i platnośc
                 </Link>
               </li>
               <li>
                 <Link href="/contacts" className="text-gray-300 hover:text-white transition-colors duration-200">
-                  Контакты
+                  Kontakt
                 </Link>
               </li>
             </ul>

@@ -31,7 +31,7 @@ class SourceListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     """Список товаров с фильтрацией"""
-    queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images')
+    queryset = Product.objects.filter(is_active=True).select_related('category')
     serializer_class = ProductListSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category', 'colors', 'sources', 'shape', 'theme', 'is_featured']
@@ -56,9 +56,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     """Детальная информация о товаре"""
-    queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related(
-        'colors', 'sizes', 'images'
-    )
+    queryset = Product.objects.filter(is_active=True).select_related('category')
     serializer_class = ProductDetailSerializer
     lookup_field = 'slug'
     
@@ -74,13 +72,13 @@ class ProductDetailView(generics.RetrieveAPIView):
 
 class FeaturedProductsView(generics.ListAPIView):
     """Рекомендуемые товары"""
-    queryset = Product.objects.filter(is_active=True, is_featured=True).select_related('category').prefetch_related('images')
+    queryset = Product.objects.filter(is_active=True, is_featured=True).select_related('category')
     serializer_class = ProductListSerializer
 
 
 class PopularProductsView(generics.ListAPIView):
     """Популярные товары (по просмотрам)"""
-    queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images').order_by('-views_count')[:10]
+    queryset = Product.objects.filter(is_active=True).select_related('category').order_by('-views_count')[:10]
     serializer_class = ProductListSerializer
 
 
@@ -145,7 +143,7 @@ def search_products(request):
         Q(description__icontains=query) |
         Q(short_description__icontains=query),
         is_active=True
-    ).select_related('category').prefetch_related('images')[:20]
+    ).select_related('category')[:20]
     
     serializer = ProductListSerializer(products, many=True)
     return Response({'results': serializer.data})
